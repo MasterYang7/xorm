@@ -6,9 +6,7 @@
 # Folders
 _obj
 _test
-vendor
-.vendor
-vendor/*
+
 # Architecture specific extensions/prefixes
 *.[568vq]
 [568vq].out
@@ -26,4 +24,3 @@ _testmain.go
 *.prof
 /test.db
 
-github.com
