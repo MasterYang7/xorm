@@ -11,10 +11,10 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/xormplus/xorm/convert"
-	"github.com/xormplus/xorm/dialects"
-	"github.com/xormplus/xorm/internal/json"
-	"github.com/xormplus/xorm/schemas"
+	"github.com/MasterYang7/xorm/convert"
+	"github.com/MasterYang7/xorm/dialects"
+	"github.com/MasterYang7/xorm/internal/json"
+	"github.com/MasterYang7/xorm/schemas"
 )
 
 var (

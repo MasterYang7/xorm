@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/xormplus/xorm/core"
-	"github.com/xormplus/xorm/schemas"
+	"github.com/MasterYang7/xorm/core"
+	"github.com/MasterYang7/xorm/schemas"
 )
 
 func reflect2objectWithDateFormat(rawValue *reflect.Value, dateFormat string) (value interface{}, err error) {

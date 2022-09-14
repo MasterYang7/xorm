@@ -3,8 +3,8 @@ package xorm
 import (
 	"sync"
 
-	"github.com/xormplus/xorm/internal/utils"
-	"github.com/xormplus/xorm/schemas"
+	"github.com/MasterYang7/xorm/internal/utils"
+	"github.com/MasterYang7/xorm/schemas"
 )
 
 const (

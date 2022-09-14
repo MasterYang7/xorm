@@ -8,13 +8,14 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
+	"github.com/MasterYang7/xorm/caches"
+	"github.com/MasterYang7/xorm/core"
+	"github.com/MasterYang7/xorm/internal/statements"
+	"github.com/MasterYang7/xorm/internal/utils"
+	"github.com/MasterYang7/xorm/schemas"
 	"github.com/xormplus/builder"
-	"github.com/xormplus/xorm/caches"
-	"github.com/xormplus/xorm/core"
-	"github.com/xormplus/xorm/internal/statements"
-	"github.com/xormplus/xorm/internal/utils"
-	"github.com/xormplus/xorm/schemas"
 )
 
 const (
@@ -44,7 +45,6 @@ func (session *Session) FindAndCount(rowsSlicePtr interface{}, condiBean ...inte
 		if err != nil {
 			return 0, err
 		}
-
 		var sql = session.statement.RawSQL
 		session.autoResetStatement = true
 		sql = "select count(1) from (" + sql + ") t"
@@ -93,7 +93,27 @@ func (session *Session) FindAndCount(rowsSlicePtr interface{}, condiBean ...inte
 	}
 
 }
+func (session *Session) FindAndCounts(rowsSlicePtr interface{}, condiBean ...interface{}) (int64, error) {
+	if session.isAutoClose {
+		defer session.Close()
+	}
+	session.autoResetStatement = false
+	err, sql := session.finds(rowsSlicePtr, condiBean...)
+	if err != nil {
+		return 0, err
+	}
+	sqls := strings.Split(sql, "LIMIT")
+	// var sql = session.statement.RawSQL
+	session.autoResetStatement = true
+	sql = "select count(t.*) from (" + sqls[0] + ") t"
+	var count int64
+	_, err = session.SQL(sql).Get(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 
+}
 func (session *Session) find(rowsSlicePtr interface{}, condiBean ...interface{}) error {
 	defer session.resetStatement()
 	if session.statement.LastError != nil {
@@ -163,7 +183,6 @@ func (session *Session) find(rowsSlicePtr interface{}, condiBean ...interface{})
 	if err != nil {
 		return err
 	}
-
 	if session.statement.ColumnMap.IsEmpty() && session.canCache() {
 		if cacher := session.engine.GetCacher(session.statement.TableName()); cacher != nil &&
 			!session.statement.IsDistinct &&
@@ -205,6 +224,118 @@ func (session *Session) find(rowsSlicePtr interface{}, condiBean ...interface{})
 
 	}
 	return session.noCacheFind(table, sliceValue, sqlStr, args...)
+}
+func (session *Session) finds(rowsSlicePtr interface{}, condiBean ...interface{}) (error, string) {
+	defer session.resetStatement()
+	if session.statement.LastError != nil {
+		return session.statement.LastError, ""
+	}
+
+	sliceValue := reflect.Indirect(reflect.ValueOf(rowsSlicePtr))
+	var isSlice = sliceValue.Kind() == reflect.Slice
+	var isMap = sliceValue.Kind() == reflect.Map
+	if !isSlice && !isMap {
+		return errors.New("needs a pointer to a slice or a map"), ""
+	}
+
+	sliceElementType := sliceValue.Type().Elem()
+
+	var tp = tpStruct
+	if session.statement.RefTable == nil {
+		if sliceElementType.Kind() == reflect.Ptr {
+			if sliceElementType.Elem().Kind() == reflect.Struct {
+				pv := reflect.New(sliceElementType.Elem())
+				if err := session.statement.SetRefValue(pv); err != nil {
+					return err, ""
+				}
+			} else {
+				tp = tpNonStruct
+			}
+		} else if sliceElementType.Kind() == reflect.Struct {
+			pv := reflect.New(sliceElementType)
+			if err := session.statement.SetRefValue(pv); err != nil {
+				return err, ""
+			}
+		} else {
+			tp = tpNonStruct
+		}
+	}
+
+	var (
+		table          = session.statement.RefTable
+		addedTableName = (len(session.statement.JoinStr) > 0)
+		autoCond       builder.Cond
+	)
+	if tp == tpStruct {
+		if !session.statement.NoAutoCondition && len(condiBean) > 0 {
+			condTable, err := session.engine.tagParser.Parse(reflect.ValueOf(condiBean[0]))
+			if err != nil {
+				return err, ""
+			}
+			autoCond, err = session.statement.BuildConds(condTable, condiBean[0], true, true, false, true, addedTableName)
+			if err != nil {
+				return err, ""
+			}
+		} else {
+			if col := table.DeletedColumn(); col != nil && !session.statement.GetUnscoped() { // tag "deleted" is enabled
+				autoCond = session.statement.CondDeleted(col)
+			}
+		}
+	}
+
+	// if it's a map with Cols but primary key not in column list, we still need the primary key
+	if isMap && !session.statement.ColumnMap.IsEmpty() {
+		for _, k := range session.statement.RefTable.PrimaryKeys {
+			session.statement.ColumnMap.Add(k)
+		}
+	}
+
+	sqlStr, args, err := session.statement.GenFindSQL(autoCond)
+	if err != nil {
+		return err, ""
+	}
+
+	if session.statement.ColumnMap.IsEmpty() && session.canCache() {
+		if cacher := session.engine.GetCacher(session.statement.TableName()); cacher != nil &&
+			!session.statement.IsDistinct &&
+			!session.statement.GetUnscoped() {
+			err = session.cacheFind(sliceElementType, sqlStr, rowsSlicePtr, args...)
+			if err != ErrCacheFailed {
+				return err, ""
+			}
+			err = nil // !nashtsai! reset err to nil for ErrCacheFailed
+			session.engine.logger.Warnf("Cache Find Failed")
+		}
+	}
+
+	if sliceValue.Kind() != reflect.Map {
+		if session.isSqlFunc {
+			var dialect = session.engine.Dialect()
+			rownumber := "xorm" + utils.NewShortUUID().String()
+			sql := session.genSelectSql(dialect, rownumber)
+
+			params := session.statement.RawParams
+			i := len(params)
+			if i == 1 {
+				vv := reflect.ValueOf(params[0])
+				//if  vv.Kind() == reflect.Slice{
+				//	sqlStr = sql
+				//	args = params
+				//}
+				if vv.Kind() != reflect.Ptr || vv.Elem().Kind() != reflect.Map {
+					sqlStr = sql
+					args = params
+				} else {
+					sqlStr, args, _ = core.MapToSlice(sql, params[0])
+				}
+			} else {
+				sqlStr = sql
+				args = params
+			}
+		}
+
+	}
+	return session.noCacheFind(table, sliceValue, sqlStr, args...), sqlStr
 }
 
 func (session *Session) noCacheFind(table *schemas.Table, containerValue reflect.Value, sqlStr string, args ...interface{}) error {

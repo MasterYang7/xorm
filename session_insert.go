@@ -13,8 +13,8 @@ import (
 	"strings"
 
 	// "github.com/xormplus/builder"
-	"github.com/xormplus/xorm/internal/utils"
-	"github.com/xormplus/xorm/schemas"
+	"github.com/MasterYang7/xorm/internal/utils"
+	"github.com/MasterYang7/xorm/schemas"
 )
 
 // ErrNoElementsOnSlice represents an error there is no element when insert

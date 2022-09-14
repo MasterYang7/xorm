@@ -8,18 +8,18 @@ import (
 	"context"
 	"time"
 
-	"github.com/xormplus/xorm/caches"
-	"github.com/xormplus/xorm/contexts"
-	"github.com/xormplus/xorm/dialects"
-	"github.com/xormplus/xorm/log"
-	"github.com/xormplus/xorm/names"
+	"github.com/MasterYang7/xorm/caches"
+	"github.com/MasterYang7/xorm/contexts"
+	"github.com/MasterYang7/xorm/dialects"
+	"github.com/MasterYang7/xorm/log"
+	"github.com/MasterYang7/xorm/names"
 )
 
 // EngineGroup defines an engine group
 type EngineGroup struct {
 	*Engine
 	subordinates []*Engine
-	policy GroupPolicy
+	policy       GroupPolicy
 }
 
 // NewEngineGroup creates a new engine group

@@ -7,8 +7,8 @@ package caches
 import (
 	"testing"
 
+	"github.com/MasterYang7/xorm/schemas"
 	"github.com/stretchr/testify/assert"
-	"github.com/xormplus/xorm/schemas"
 )
 
 func TestLRUCache(t *testing.T) {

@@ -11,10 +11,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/MasterYang7/xorm/caches"
+	"github.com/MasterYang7/xorm/internal/utils"
+	"github.com/MasterYang7/xorm/schemas"
 	"github.com/xormplus/builder"
-	"github.com/xormplus/xorm/caches"
-	"github.com/xormplus/xorm/internal/utils"
-	"github.com/xormplus/xorm/schemas"
 )
 
 func (session *Session) cacheUpdate(table *schemas.Table, tableName, sqlStr string, args ...interface{}) error {

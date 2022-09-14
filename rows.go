@@ -10,9 +10,9 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/MasterYang7/xorm/core"
+	"github.com/MasterYang7/xorm/internal/utils"
 	"github.com/xormplus/builder"
-	"github.com/xormplus/xorm/core"
-	"github.com/xormplus/xorm/internal/utils"
 )
 
 // Rows rows wrapper a rows to

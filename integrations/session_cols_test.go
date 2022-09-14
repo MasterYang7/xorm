@@ -7,9 +7,9 @@ package integrations
 import (
 	"testing"
 
+	"github.com/MasterYang7/xorm/schemas"
 	"github.com/stretchr/testify/assert"
 	"github.com/xormplus/builder"
-	"github.com/xormplus/xorm/schemas"
 )
 
 func TestSetExpr(t *testing.T) {

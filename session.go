@@ -18,13 +18,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xormplus/xorm/contexts"
-	"github.com/xormplus/xorm/convert"
-	"github.com/xormplus/xorm/core"
-	"github.com/xormplus/xorm/internal/json"
-	"github.com/xormplus/xorm/internal/statements"
-	"github.com/xormplus/xorm/log"
-	"github.com/xormplus/xorm/schemas"
+	"github.com/MasterYang7/xorm/contexts"
+	"github.com/MasterYang7/xorm/convert"
+	"github.com/MasterYang7/xorm/core"
+	"github.com/MasterYang7/xorm/internal/json"
+	"github.com/MasterYang7/xorm/internal/statements"
+	"github.com/MasterYang7/xorm/log"
+	"github.com/MasterYang7/xorm/schemas"
 )
 
 type sessionType bool

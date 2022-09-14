@@ -8,9 +8,9 @@ import (
 	"database/sql"
 	"reflect"
 
+	"github.com/MasterYang7/xorm/core"
 	"github.com/xormplus/builder"
-	"github.com/xormplus/xorm/core"
-	// "github.com/xormplus/xorm/internal/statements"
+	// "github.com/MasterYang7/xorm/internal/statements"
 )
 
 func (session *Session) queryPreprocess(sqlStr *string, paramStr ...interface{}) {

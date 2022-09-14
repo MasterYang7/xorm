@@ -11,10 +11,10 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/xormplus/xorm/caches"
-	"github.com/xormplus/xorm/core"
-	"github.com/xormplus/xorm/internal/utils"
-	"github.com/xormplus/xorm/schemas"
+	"github.com/MasterYang7/xorm/caches"
+	"github.com/MasterYang7/xorm/core"
+	"github.com/MasterYang7/xorm/internal/utils"
+	"github.com/MasterYang7/xorm/schemas"
 )
 
 // Get retrieve one record from database, bean's non-empty fields
