@@ -12,12 +12,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/MasterYang7/xorm"
 	"github.com/MasterYang7/xorm/caches"
 	"github.com/MasterYang7/xorm/dialects"
 	"github.com/MasterYang7/xorm/log"
 	"github.com/MasterYang7/xorm/names"
 	"github.com/MasterYang7/xorm/schemas"
-	"github.com/xormplus/xorm"
 )
 
 var (

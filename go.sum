@@ -71,8 +71,8 @@ github.com/tealeg/xlsx v0.0.0-20180419195153-f36fa3be8893 h1:l1uU268ZVy0b7bGrFkc
 github.com/tealeg/xlsx v0.0.0-20180419195153-f36fa3be8893/go.mod h1:uxu5UY2ovkuRPWKQ8Q7JG0JbSivrISjdPzZQKeo74mA=
 github.com/xormplus/builder v0.0.0-20200331055651-240ff40009be h1:HTSana2sMSKVze3XXYrF89w2tw835Fh+7xX5KPvAkuo=
 github.com/xormplus/builder v0.0.0-20200331055651-240ff40009be/go.mod h1:PgBA7NoHtnttVkWModa/qpvIWkX6MpOKgyRCWsSKSB0=
-github.com/xormplus/xorm v0.0.0-20210822100304-4e1d4fcc1e67 h1:POBVR/O5wPVI0u7ZZGqu+HFPVTYpZlSL3Uo/9g+he/w=
-github.com/xormplus/xorm v0.0.0-20210822100304-4e1d4fcc1e67/go.mod h1:+v6b10b4x5IcQmp1/Cbo9IqaknxVeuhQng+fhya6bdI=
+github.com/MasterYang7/xorm v0.0.0-20210822100304-4e1d4fcc1e67 h1:POBVR/O5wPVI0u7ZZGqu+HFPVTYpZlSL3Uo/9g+he/w=
+github.com/MasterYang7/xorm v0.0.0-20210822100304-4e1d4fcc1e67/go.mod h1:+v6b10b4x5IcQmp1/Cbo9IqaknxVeuhQng+fhya6bdI=
 github.com/ziutek/mymysql v1.5.4 h1:GB0qdRGsTwQSBVYuVShFBKaXSnSnYYC2d9knnE1LHFs=
 github.com/ziutek/mymysql v1.5.4/go.mod h1:LMSpPZ6DbqWFxNCHW77HeMg9I646SAhApZ/wKdgO/C0=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
