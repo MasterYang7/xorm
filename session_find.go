@@ -98,7 +98,7 @@ func (session *Session) FindAndCounts(rowsSlicePtr interface{}, condiBean ...int
 		defer session.Close()
 	}
 	session.autoResetStatement = false
-	err, sql := session.finds(rowsSlicePtr, condiBean...)
+	err, sql, args := session.finds(rowsSlicePtr, condiBean...)
 	if err != nil {
 		return 0, err
 	}
@@ -107,7 +107,7 @@ func (session *Session) FindAndCounts(rowsSlicePtr interface{}, condiBean ...int
 	session.autoResetStatement = true
 	sql = "select count(t.*) from (" + sqls[0] + ") t"
 	var count int64
-	_, err = session.SQL(sql).Get(&count)
+	_, err = session.SQL(sql, args...).Get(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -225,17 +225,17 @@ func (session *Session) find(rowsSlicePtr interface{}, condiBean ...interface{})
 	}
 	return session.noCacheFind(table, sliceValue, sqlStr, args...)
 }
-func (session *Session) finds(rowsSlicePtr interface{}, condiBean ...interface{}) (error, string) {
+func (session *Session) finds(rowsSlicePtr interface{}, condiBean ...interface{}) (error, string, []interface{}) {
 	defer session.resetStatement()
 	if session.statement.LastError != nil {
-		return session.statement.LastError, ""
+		return session.statement.LastError, "", nil
 	}
 
 	sliceValue := reflect.Indirect(reflect.ValueOf(rowsSlicePtr))
 	var isSlice = sliceValue.Kind() == reflect.Slice
 	var isMap = sliceValue.Kind() == reflect.Map
 	if !isSlice && !isMap {
-		return errors.New("needs a pointer to a slice or a map"), ""
+		return errors.New("needs a pointer to a slice or a map"), "", nil
 	}
 
 	sliceElementType := sliceValue.Type().Elem()
@@ -246,7 +246,7 @@ func (session *Session) finds(rowsSlicePtr interface{}, condiBean ...interface{}
 			if sliceElementType.Elem().Kind() == reflect.Struct {
 				pv := reflect.New(sliceElementType.Elem())
 				if err := session.statement.SetRefValue(pv); err != nil {
-					return err, ""
+					return err, "", nil
 				}
 			} else {
 				tp = tpNonStruct
@@ -254,7 +254,7 @@ func (session *Session) finds(rowsSlicePtr interface{}, condiBean ...interface{}
 		} else if sliceElementType.Kind() == reflect.Struct {
 			pv := reflect.New(sliceElementType)
 			if err := session.statement.SetRefValue(pv); err != nil {
-				return err, ""
+				return err, "", nil
 			}
 		} else {
 			tp = tpNonStruct
@@ -270,11 +270,11 @@ func (session *Session) finds(rowsSlicePtr interface{}, condiBean ...interface{}
 		if !session.statement.NoAutoCondition && len(condiBean) > 0 {
 			condTable, err := session.engine.tagParser.Parse(reflect.ValueOf(condiBean[0]))
 			if err != nil {
-				return err, ""
+				return err, "", nil
 			}
 			autoCond, err = session.statement.BuildConds(condTable, condiBean[0], true, true, false, true, addedTableName)
 			if err != nil {
-				return err, ""
+				return err, "", nil
 			}
 		} else {
 			if col := table.DeletedColumn(); col != nil && !session.statement.GetUnscoped() { // tag "deleted" is enabled
@@ -292,7 +292,7 @@ func (session *Session) finds(rowsSlicePtr interface{}, condiBean ...interface{}
 
 	sqlStr, args, err := session.statement.GenFindSQL(autoCond)
 	if err != nil {
-		return err, ""
+		return err, "", nil
 	}
 
 	if session.statement.ColumnMap.IsEmpty() && session.canCache() {
@@ -301,7 +301,7 @@ func (session *Session) finds(rowsSlicePtr interface{}, condiBean ...interface{}
 			!session.statement.GetUnscoped() {
 			err = session.cacheFind(sliceElementType, sqlStr, rowsSlicePtr, args...)
 			if err != ErrCacheFailed {
-				return err, ""
+				return err, "", nil
 			}
 			err = nil // !nashtsai! reset err to nil for ErrCacheFailed
 			session.engine.logger.Warnf("Cache Find Failed")
@@ -335,7 +335,7 @@ func (session *Session) finds(rowsSlicePtr interface{}, condiBean ...interface{}
 		}
 
 	}
-	return session.noCacheFind(table, sliceValue, sqlStr, args...), sqlStr
+	return session.noCacheFind(table, sliceValue, sqlStr, args...), sqlStr, args
 }
 
 func (session *Session) noCacheFind(table *schemas.Table, containerValue reflect.Value, sqlStr string, args ...interface{}) error {
